@@ -485,6 +485,52 @@ input[type="range"]::-moz-range-thumb {
 .consumption-wins .rec-annual { background: rgba(16,185,129,.15); color: #065f46; }
 .license-wins .rec-annual { background: rgba(239,68,68,.12); color: #991b1b; }
 
+/* ─── Advantage Badges ─── */
+.adv-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font-size: .68rem;
+  font-weight: 700;
+  padding: .2rem .55rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+.adv-badge.consumption { background: rgba(16,185,129,.12); color: #065f46; }
+.adv-badge.license { background: rgba(239,68,68,.1); color: #991b1b; }
+.adv-badge.even { background: rgba(245,158,11,.12); color: #92400e; }
+.adv-amount {
+  display: block;
+  font-size: .78rem;
+  font-weight: 700;
+  margin-top: .2rem;
+}
+
+/* ─── Recommended Model Card ─── */
+.summary-stat.recommended {
+  border-width: 2px;
+}
+.summary-stat.recommended.rec-consumption {
+  border-color: var(--green);
+  background: rgba(16,185,129,.04);
+}
+.summary-stat.recommended.rec-license {
+  border-color: var(--red);
+  background: rgba(239,68,68,.03);
+}
+.rec-model-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-top: .25rem;
+}
+.rec-model-gap {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-top: .15rem;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   .hero h1 { font-size: 1.4rem; }
@@ -1333,6 +1379,10 @@ function renderSummary() {
   const delta = totalLicense - totalConsumption;
   const pctSavings = totalLicense > 0 ? (delta / totalLicense * 100) : 0;
 
+  // Determine winner
+  const consumptionWins = delta >= 0;
+  const isEven = Math.abs(delta) < 1;
+
   // Stats
   const statsEl = document.getElementById('summaryStats');
   statsEl.innerHTML = `
@@ -1350,12 +1400,15 @@ function renderSummary() {
       <div class="stat-value" style="color:#ef4444">${fmtInt(totalLicense)}</div>
       <div class="stat-sub">/ month</div>
     </div>
-    <div class="summary-stat">
-      <div class="stat-label">${delta >= 0 ? 'Monthly Savings (Consumption)' : 'Monthly Extra Cost (Consumption)'}</div>
-      <div class="stat-value" style="color:${delta >= 0 ? 'var(--green)' : 'var(--red)'}">
-        ${delta >= 0 ? '+' : '−'}${fmtInt(Math.abs(delta))}
+    <div class="summary-stat recommended ${isEven ? '' : consumptionWins ? 'rec-consumption' : 'rec-license'}">
+      <div class="stat-label">Recommended Model</div>
+      <div class="rec-model-name" style="color:${isEven ? 'var(--orange)' : consumptionWins ? 'var(--green)' : 'var(--red)'}">
+        ${isEven ? 'Either — At Parity' : consumptionWins ? '⚡ Consumption' : '🔑 Per-User License'}
       </div>
-      <div class="stat-sub">${Math.abs(pctSavings).toFixed(1)}% ${delta >= 0 ? 'cheaper' : 'more expensive'} than PUPM</div>
+      <div class="rec-model-gap" style="color:${isEven ? 'var(--orange)' : consumptionWins ? '#065f46' : '#991b1b'}">
+        ${isEven ? '—' : fmtInt(Math.abs(delta))}<span style="font-size:.7rem;font-weight:500;">/mo</span>
+      </div>
+      <div class="stat-sub">${isEven ? 'No meaningful difference' : Math.abs(pctSavings).toFixed(1) + '% cheaper than ' + (consumptionWins ? 'PUPM' : 'consumption')}</div>
     </div>
   `;
 
@@ -1368,11 +1421,15 @@ function renderSummary() {
       <th>Cost / User</th>
       <th>Consumption Total</th>
       <th>License Total</th>
-      <th>PUPM Savings</th>
+      <th>Advantage</th>
     </tr>
   `;
   table.querySelector('tbody').innerHTML = rows.map((r, ri) => {
     const d = r.licenseTotal - r.consumptionTotal;
+    const rowEven = Math.abs(d) < 1;
+    const rowConsWins = d >= 0;
+    const badgeClass = rowEven ? 'even' : rowConsWins ? 'consumption' : 'license';
+    const badgeLabel = rowEven ? '⚖️ Even' : rowConsWins ? '⚡ Consumption' : '🔑 PUPM';
     return `
       <tr>
         <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${r.group.color};margin-right:6px;"></span>${r.group.name}</td>
@@ -1383,9 +1440,9 @@ function renderSummary() {
         <td>${fmt(r.perUser)}</td>
         <td>${fmtInt(r.consumptionTotal)}</td>
         <td>${fmtInt(r.licenseTotal)}</td>
-        <td style="color:${d >= 0 ? 'var(--green)' : 'var(--red)'}; font-weight:600;">
-          ${d >= 0 ? '+' : '−'}${fmtInt(Math.abs(d))}
-          <div style="font-size:.7rem;font-weight:400;color:var(--text-muted)">${d >= 0 ? 'consumption cheaper' : 'PUPM cheaper'}</div>
+        <td>
+          <span class="adv-badge ${badgeClass}">${badgeLabel}</span>
+          ${rowEven ? '' : '<span class="adv-amount" style="color:' + (rowConsWins ? 'var(--green)' : 'var(--red)') + '">' + fmtInt(Math.abs(d)) + '/mo</span>'}
         </td>
       </tr>
     `;
@@ -1396,44 +1453,59 @@ function renderSummary() {
       <td>—</td>
       <td>${fmtInt(totalConsumption)}</td>
       <td>${fmtInt(totalLicense)}</td>
-      <td style="color:${delta >= 0 ? 'var(--green)' : 'var(--red)'}; font-weight:700;">
-        ${delta >= 0 ? '+' : '−'}${fmtInt(Math.abs(delta))} /mo
-        <div style="font-weight:600;">${delta >= 0 ? '+' : '−'}${fmtInt(Math.abs(delta) * 12)} /yr</div>
-        <div style="font-size:.7rem;font-weight:400;color:var(--text-muted)">${delta >= 0 ? 'consumption cheaper' : 'PUPM cheaper'}</div>
+      <td>
+        <span class="adv-badge ${isEven ? 'even' : consumptionWins ? 'consumption' : 'license'}">${isEven ? '⚖️ Even' : consumptionWins ? '⚡ Consumption' : '🔑 PUPM'}</span>
+        ${isEven ? '' : '<span class="adv-amount" style="color:' + (consumptionWins ? 'var(--green)' : 'var(--red)') + '">' + fmtInt(Math.abs(delta)) + '/mo · ' + fmtInt(Math.abs(delta) * 12) + '/yr</span>'}
       </td>
     </tr>
   `;
 
   // Recommendation
   const recEl = document.getElementById('recommendation');
-  if (delta >= 0) {
-    recEl.className = 'recommendation consumption-wins';
+  if (isEven) {
+    recEl.className = 'recommendation';
+    recEl.style.background = 'rgba(245,158,11,.08)';
+    recEl.style.color = '#92400e';
+    recEl.style.border = '1px solid rgba(245,158,11,.3)';
     recEl.innerHTML = `
       <div style="display:flex;align-items:center;gap:.6rem;">
-        <span class="rec-icon">✅</span>
+        <span class="rec-icon">⚖️</span>
         <div>
-          <div>Consumption pricing is <strong>cheaper</strong> than PUPM</div>
-          <div class="rec-savings" style="color:#065f46">Saving ${fmtInt(delta)} / month (${pctSavings.toFixed(1)}%)</div>
+          <div><strong>Recommendation:</strong> Either model — costs are equivalent</div>
+          <div class="rec-savings" style="color:#92400e">Consider per-user licensing for budget predictability, or consumption for flexibility</div>
+        </div>
+      </div>
+    `;
+  } else if (consumptionWins) {
+    recEl.className = 'recommendation consumption-wins';
+    recEl.style.cssText = '';
+    recEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:.6rem;">
+        <span class="rec-icon">⚡</span>
+        <div>
+          <div><strong>Recommendation:</strong> Use consumption pricing</div>
+          <div class="rec-savings" style="color:#065f46">${fmtInt(Math.abs(delta))}/mo cheaper (${Math.abs(pctSavings).toFixed(1)}% less than PUPM)</div>
         </div>
       </div>
       <div class="rec-annual">
-        <span class="annual-label">Annual<br>Savings</span>
-        <span style="color:#065f46">+${fmtInt(delta * 12)}</span>
+        <span class="annual-label">Annual<br>Advantage</span>
+        <span style="color:#065f46">${fmtInt(Math.abs(delta) * 12)}</span>
       </div>
     `;
   } else {
     recEl.className = 'recommendation license-wins';
+    recEl.style.cssText = '';
     recEl.innerHTML = `
       <div style="display:flex;align-items:center;gap:.6rem;">
-        <span class="rec-icon">⚠️</span>
+        <span class="rec-icon">🔑</span>
         <div>
-          <div>PUPM licensing is <strong>cheaper</strong> than consumption pricing</div>
-          <div class="rec-savings" style="color:#991b1b">Costing ${fmtInt(Math.abs(delta))} / month extra (${Math.abs(pctSavings).toFixed(1)}% more)</div>
+          <div><strong>Recommendation:</strong> Use per-user licensing (PUPM)</div>
+          <div class="rec-savings" style="color:#991b1b">${fmtInt(Math.abs(delta))}/mo cheaper (${Math.abs(pctSavings).toFixed(1)}% less than consumption)</div>
         </div>
       </div>
       <div class="rec-annual">
-        <span class="annual-label">Annual<br>Extra Cost</span>
-        <span style="color:#991b1b">-${fmtInt(Math.abs(delta) * 12)}</span>
+        <span class="annual-label">Annual<br>Advantage</span>
+        <span style="color:#991b1b">${fmtInt(Math.abs(delta) * 12)}</span>
       </div>
     `;
   }
