@@ -461,7 +461,7 @@ input[type="range"]::-moz-range-thumb {
   flex-wrap: wrap;
 }
 .recommendation.consumption-wins { background: rgba(16,185,129,.1); color: #065f46; border: 1px solid rgba(16,185,129,.3); }
-.recommendation.license-wins    { background: rgba(239,68,68,.08); color: #991b1b; border: 1px solid rgba(239,68,68,.25); }
+.recommendation.license-wins    { background: rgba(16,185,129,.1); color: #065f46; border: 1px solid rgba(16,185,129,.3); }
 .recommendation .rec-icon { font-size: 1.6rem; }
 .recommendation .rec-savings { font-size: 1.1rem; font-weight: 800; }
 .rec-annual {
@@ -483,7 +483,7 @@ input[type="range"]::-moz-range-thumb {
   opacity: .7;
 }
 .consumption-wins .rec-annual { background: rgba(16,185,129,.15); color: #065f46; }
-.license-wins .rec-annual { background: rgba(239,68,68,.12); color: #991b1b; }
+.license-wins .rec-annual { background: rgba(16,185,129,.15); color: #065f46; }
 
 /* ─── Advantage Badges ─── */
 .adv-badge {
@@ -1445,7 +1445,7 @@ function renderSummary() {
       <div class="stat-value" style="color:var(--accent)">${fmtInt(totalRecommended)}</div>
       <div class="stat-sub">/ month · ${fmtInt(totalRecommended * 12)} / year</div>
       <div class="stat-sub" style="color:#065f46;font-weight:700;margin-top:.3rem;">
-        ${fmtInt(mixAdvantage)}/mo less than wall-to-wall PUPM
+        ${mixAdvantage < 1 ? 'PUPM is already the best value' : fmtInt(mixAdvantage) + '/mo less than wall-to-wall PUPM'}
       </div>
     </div>
   `;
@@ -1530,7 +1530,7 @@ function renderSummary() {
     recEl.className = 'recommendation license-wins';
     recBody = `
       <div><strong>Recommendation:</strong> Use per-user licensing for all groups</div>
-      <div class="rec-savings" style="color:#991b1b">${fmtInt(mixAdvantage)}/mo cheaper than wall-to-wall PUPM (${mixPct.toFixed(1)}%)</div>
+      <div class="rec-savings" style="color:#065f46">PUPM is the best value — consumption pricing offers no additional savings</div>
     `;
   } else {
     recBody = `
@@ -1549,8 +1549,8 @@ function renderSummary() {
       <div>${recBody}</div>
     </div>
     <div class="rec-annual">
-      <span class="annual-label">Annual<br>Advantage</span>
-      <span style="color:#065f46">${fmtInt(mixAdvantage * 12)}</span>
+      <span class="annual-label">${mixAdvantage < 1 ? 'Best<br>Value' : 'Annual<br>Advantage'}</span>
+      <span style="color:#065f46">${mixAdvantage < 1 ? '✓ PUPM' : fmtInt(mixAdvantage * 12)}</span>
     </div>
   `;
 
