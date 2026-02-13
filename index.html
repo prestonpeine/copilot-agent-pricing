@@ -527,6 +527,13 @@ input[type="range"]::-moz-range-thumb {
   flex-wrap: wrap;
   gap: .5rem;
   padding: .5rem 0 .8rem;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--radius-sm);
+  transition: background .15s;
+}
+.agent-summary-bar:hover {
+  background: rgba(99,102,241,.04);
 }
 .agent-summary-chip {
   display: inline-flex;
@@ -1381,7 +1388,7 @@ function resetDefaults() {
 }
 
 // Agent accordion toggle
-document.getElementById('agentToggle').addEventListener('click', () => {
+function toggleAgentAccordion() {
   agentAccordionOpen = !agentAccordionOpen;
   const body = document.getElementById('agentBody');
   const chevron = document.getElementById('agentChevron');
@@ -1393,7 +1400,9 @@ document.getElementById('agentToggle').addEventListener('click', () => {
     chevron.classList.add('collapsed');
   }
   renderAgentSummary();
-});
+}
+document.getElementById('agentToggle').addEventListener('click', toggleAgentAccordion);
+document.getElementById('agentSummaryBar').addEventListener('click', toggleAgentAccordion);
 
 // PUPM slider
 document.getElementById('pupmSlider').value = state.pupm;
