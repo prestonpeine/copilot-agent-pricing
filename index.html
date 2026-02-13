@@ -682,10 +682,10 @@ input[type="range"]::-moz-range-thumb {
   <div class="formula-wrap">
     <div class="formula">Total Cost = Cadence × Conversation × Computation × Composition</div>
     <div class="formula-tooltip">
-      <div class="def-row"><span class="def-term">Cadence:</span> How many agent sessions per month?</div>
-      <div class="def-row"><span class="def-term">Conversation:</span> Human-to-agent interaction — how many back-and-forth turns per session?</div>
-      <div class="def-row"><span class="def-term">Computation:</span> Agent-to-back office interaction — the cost of the "brainpower," which increases as fan-out of data and tool calls grows per turn.</div>
-      <div class="def-row"><span class="def-term">Composition:</span> The mixture of different agent types used during the month.</div>
+      <div class="def-row"><span class="def-term">Cadence:</span> How often does each user run an agent? More sessions = higher consumption cost.</div>
+      <div class="def-row"><span class="def-term">Conversation:</span> How deep is each session? More turns means the agent is doing more reasoning per interaction.</div>
+      <div class="def-row"><span class="def-term">Computation:</span> The cost per turn — driven by model complexity, data grounding, and tool calls. Simple lookups are cheap; deep analysis costs more.</div>
+      <div class="def-row"><span class="def-term">Composition:</span> What mix of agents does each user group rely on? A team heavy on Strategy agents costs more than one using mostly Information Retrieval.</div>
     </div>
   </div>
 </div>
