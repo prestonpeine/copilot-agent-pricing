@@ -1406,7 +1406,7 @@ function renderSummary() {
         ${isEven ? 'Either — At Parity' : consumptionWins ? '⚡ Consumption' : '🔑 Per-User License'}
       </div>
       <div class="rec-model-gap" style="color:${isEven ? 'var(--orange)' : consumptionWins ? '#065f46' : '#991b1b'}">
-        ${isEven ? '—' : fmtInt(Math.abs(delta))}<span style="font-size:.7rem;font-weight:500;">/mo</span>
+        ${isEven ? '—' : 'cheaper by ' + fmtInt(Math.abs(delta))}<span style="font-size:.7rem;font-weight:500;">/mo</span>
       </div>
       <div class="stat-sub">${isEven ? 'No meaningful difference' : Math.abs(pctSavings).toFixed(1) + '% cheaper than ' + (consumptionWins ? 'PUPM' : 'consumption')}</div>
     </div>
@@ -1442,7 +1442,6 @@ function renderSummary() {
         <td>${fmtInt(r.licenseTotal)}</td>
         <td>
           <span class="adv-badge ${badgeClass}">${badgeLabel}</span>
-          ${rowEven ? '' : '<span class="adv-amount" style="color:' + (rowConsWins ? 'var(--green)' : 'var(--red)') + '">' + fmtInt(Math.abs(d)) + '/mo</span>'}
         </td>
       </tr>
     `;
@@ -1455,7 +1454,7 @@ function renderSummary() {
       <td>${fmtInt(totalLicense)}</td>
       <td>
         <span class="adv-badge ${isEven ? 'even' : consumptionWins ? 'consumption' : 'license'}">${isEven ? '⚖️ Even' : consumptionWins ? '⚡ Consumption' : '🔑 PUPM'}</span>
-        ${isEven ? '' : '<span class="adv-amount" style="color:' + (consumptionWins ? 'var(--green)' : 'var(--red)') + '">' + fmtInt(Math.abs(delta)) + '/mo · ' + fmtInt(Math.abs(delta) * 12) + '/yr</span>'}
+        ${isEven ? '' : '<span class="adv-amount" style="color:' + (consumptionWins ? 'var(--green)' : 'var(--red)') + '">cheaper by ' + fmtInt(Math.abs(delta)) + '/mo · ' + fmtInt(Math.abs(delta) * 12) + '/yr</span>'}
       </td>
     </tr>
   `;
