@@ -507,6 +507,35 @@ input[type="range"]::-moz-range-thumb {
   font-weight: 700;
   margin-top: .2rem;
 }
+.rec-cost {
+  font-size: .82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.rec-cost .rec-cost-sub {
+  display: block;
+  font-size: .65rem;
+  font-weight: 600;
+  margin-top: .1rem;
+}
+.rec-group-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem .8rem;
+  margin-top: .3rem;
+  font-size: .82rem;
+  font-weight: 500;
+}
+.rec-group-item {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+}
+.rec-group-item .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
 
 /* ─── Recommended Model Card ─── */
 .summary-stat.recommended {
@@ -1364,20 +1393,31 @@ function renderChart() {
 // ═══════════════════════════════════════════════
 
 function renderSummary() {
-  let totalUsers = 0, totalConsumption = 0, totalLicense = 0;
+  let totalUsers = 0, totalConsumption = 0, totalLicense = 0, totalRecommended = 0;
 
   const rows = state.groups.map(group => {
     const perUser = groupCostPerUser(group);
     const consumptionTotal = perUser * group.userCount;
     const licenseTotal = state.pupm * group.userCount;
+    const recommended = Math.min(consumptionTotal, licenseTotal);
+    const recModel = consumptionTotal <= licenseTotal ? 'consumption' : 'license';
     totalUsers += group.userCount;
     totalConsumption += consumptionTotal;
     totalLicense += licenseTotal;
-    return { group, perUser, consumptionTotal, licenseTotal };
+    totalRecommended += recommended;
+    return { group, perUser, consumptionTotal, licenseTotal, recommended, recModel };
   });
 
   const delta = totalLicense - totalConsumption;
   const pctSavings = totalLicense > 0 ? (delta / totalLicense * 100) : 0;
+
+  // Optimal mix advantage vs wall-to-wall PUPM
+  const mixAdvantage = totalLicense - totalRecommended;
+  const mixPct = totalLicense > 0 ? (mixAdvantage / totalLicense * 100) : 0;
+  // Check if mix is all one model
+  const allConsumption = rows.every(r => r.recModel === 'consumption');
+  const allLicense = rows.every(r => r.recModel === 'license');
+  const isMixed = !allConsumption && !allLicense;
 
   // Determine winner
   const consumptionWins = delta >= 0;
@@ -1400,15 +1440,13 @@ function renderSummary() {
       <div class="stat-value" style="color:#ef4444">${fmtInt(totalLicense)}</div>
       <div class="stat-sub">/ month</div>
     </div>
-    <div class="summary-stat recommended ${isEven ? '' : consumptionWins ? 'rec-consumption' : 'rec-license'}">
-      <div class="stat-label">Recommended Model</div>
-      <div class="rec-model-name" style="color:${isEven ? 'var(--orange)' : consumptionWins ? 'var(--green)' : 'var(--red)'}">
-        ${isEven ? 'Either — At Parity' : consumptionWins ? '⚡ Consumption' : '🔑 Per-User License'}
+    <div class="summary-stat recommended rec-consumption" style="border-color:var(--accent);background:rgba(99,102,241,.04);">
+      <div class="stat-label">Optimal Mix Cost</div>
+      <div class="stat-value" style="color:var(--accent)">${fmtInt(totalRecommended)}</div>
+      <div class="stat-sub">/ month · ${fmtInt(totalRecommended * 12)} / year</div>
+      <div class="stat-sub" style="color:#065f46;font-weight:700;margin-top:.3rem;">
+        ${fmtInt(mixAdvantage)}/mo less than wall-to-wall PUPM
       </div>
-      <div class="rec-model-gap" style="color:${isEven ? 'var(--orange)' : consumptionWins ? '#065f46' : '#991b1b'}">
-        ${isEven ? '—' : 'cheaper by ' + fmtInt(Math.abs(delta))}<span style="font-size:.7rem;font-weight:500;">/mo</span>
-      </div>
-      <div class="stat-sub">${isEven ? 'No meaningful difference' : Math.abs(pctSavings).toFixed(1) + '% cheaper than ' + (consumptionWins ? 'PUPM' : 'consumption')}</div>
     </div>
   `;
 
@@ -1422,6 +1460,7 @@ function renderSummary() {
       <th>Consumption Total</th>
       <th>License Total</th>
       <th>Advantage</th>
+      <th>Recommended</th>
     </tr>
   `;
   table.querySelector('tbody').innerHTML = rows.map((r, ri) => {
@@ -1443,6 +1482,12 @@ function renderSummary() {
         <td>
           <span class="adv-badge ${badgeClass}">${badgeLabel}</span>
         </td>
+        <td>
+          <span class="rec-cost" style="color:${r.recModel === 'consumption' ? 'var(--accent)' : '#ef4444'}">
+            ${fmtInt(r.recommended)}
+            <span class="rec-cost-sub adv-badge ${r.recModel === 'consumption' ? 'consumption' : 'license'}">${r.recModel === 'consumption' ? '⚡ Consumption' : '🔑 PUPM'}</span>
+          </span>
+        </td>
       </tr>
     `;
   }).join('') + `
@@ -1454,60 +1499,64 @@ function renderSummary() {
       <td>${fmtInt(totalLicense)}</td>
       <td>
         <span class="adv-badge ${isEven ? 'even' : consumptionWins ? 'consumption' : 'license'}">${isEven ? '⚖️ Even' : consumptionWins ? '⚡ Consumption' : '🔑 PUPM'}</span>
-        ${isEven ? '' : '<span class="adv-amount" style="color:' + (consumptionWins ? 'var(--green)' : 'var(--red)') + '">cheaper by ' + fmtInt(Math.abs(delta)) + '/mo · ' + fmtInt(Math.abs(delta) * 12) + '/yr</span>'}
+        ${isEven ? '' : '<span class="adv-amount" style="color:' + (consumptionWins ? 'var(--green)' : 'var(--red)') + '">cheaper by ' + fmtInt(Math.abs(delta)) + '/mo</span>'}
+      </td>
+      <td>
+        <span class="rec-cost" style="color:var(--accent);font-size:.95rem;">
+          ${fmtInt(totalRecommended)}/mo
+          <span class="rec-cost-sub" style="color:#065f46;">↓ ${fmtInt(mixAdvantage)}/mo vs PUPM</span>
+        </span>
       </td>
     </tr>
   `;
 
   // Recommendation
   const recEl = document.getElementById('recommendation');
-  if (isEven) {
-    recEl.className = 'recommendation';
-    recEl.style.background = 'rgba(245,158,11,.08)';
-    recEl.style.color = '#92400e';
-    recEl.style.border = '1px solid rgba(245,158,11,.3)';
-    recEl.innerHTML = `
-      <div style="display:flex;align-items:center;gap:.6rem;">
-        <span class="rec-icon">⚖️</span>
-        <div>
-          <div><strong>Recommendation:</strong> Either model — costs are equivalent</div>
-          <div class="rec-savings" style="color:#92400e">Consider per-user licensing for budget predictability, or consumption for flexibility</div>
-        </div>
-      </div>
+
+  // Build per-group breakdown
+  const consGroups = rows.filter(r => r.recModel === 'consumption');
+  const licGroups = rows.filter(r => r.recModel === 'license');
+
+  const groupList = (groups, icon) => groups.map(r =>
+    `<span class="rec-group-item"><span class="dot" style="background:${r.group.color}"></span>${r.group.name}</span>`
+  ).join('');
+
+  recEl.className = 'recommendation consumption-wins';
+  recEl.style.cssText = '';
+
+  let recBody = '';
+  if (allConsumption) {
+    recBody = `
+      <div><strong>Recommendation:</strong> Use consumption pricing for all groups</div>
+      <div class="rec-savings" style="color:#065f46">${fmtInt(mixAdvantage)}/mo cheaper than wall-to-wall PUPM (${mixPct.toFixed(1)}%)</div>
     `;
-  } else if (consumptionWins) {
-    recEl.className = 'recommendation consumption-wins';
-    recEl.style.cssText = '';
-    recEl.innerHTML = `
-      <div style="display:flex;align-items:center;gap:.6rem;">
-        <span class="rec-icon">⚡</span>
-        <div>
-          <div><strong>Recommendation:</strong> Use consumption pricing</div>
-          <div class="rec-savings" style="color:#065f46">${fmtInt(Math.abs(delta))}/mo cheaper (${Math.abs(pctSavings).toFixed(1)}% less than PUPM)</div>
-        </div>
-      </div>
-      <div class="rec-annual">
-        <span class="annual-label">Annual<br>Advantage</span>
-        <span style="color:#065f46">${fmtInt(Math.abs(delta) * 12)}</span>
-      </div>
+  } else if (allLicense) {
+    recEl.className = 'recommendation license-wins';
+    recBody = `
+      <div><strong>Recommendation:</strong> Use per-user licensing for all groups</div>
+      <div class="rec-savings" style="color:#991b1b">${fmtInt(mixAdvantage)}/mo cheaper than wall-to-wall PUPM (${mixPct.toFixed(1)}%)</div>
     `;
   } else {
-    recEl.className = 'recommendation license-wins';
-    recEl.style.cssText = '';
-    recEl.innerHTML = `
-      <div style="display:flex;align-items:center;gap:.6rem;">
-        <span class="rec-icon">🔑</span>
-        <div>
-          <div><strong>Recommendation:</strong> Use per-user licensing (PUPM)</div>
-          <div class="rec-savings" style="color:#991b1b">${fmtInt(Math.abs(delta))}/mo cheaper (${Math.abs(pctSavings).toFixed(1)}% less than consumption)</div>
-        </div>
+    recBody = `
+      <div><strong>Recommendation:</strong> Use a blended approach</div>
+      <div class="rec-group-list">
+        ${consGroups.length ? '<strong style="color:#065f46;">⚡ Consumption:</strong> ' + groupList(consGroups) : ''}
+        ${licGroups.length ? '<strong style="color:#991b1b;">🔑 PUPM:</strong> ' + groupList(licGroups) : ''}
       </div>
-      <div class="rec-annual">
-        <span class="annual-label">Annual<br>Advantage</span>
-        <span style="color:#991b1b">${fmtInt(Math.abs(delta) * 12)}</span>
-      </div>
+      <div class="rec-savings" style="color:#065f46;margin-top:.3rem;">${fmtInt(mixAdvantage)}/mo cheaper than wall-to-wall PUPM (${mixPct.toFixed(1)}%)</div>
     `;
   }
+
+  recEl.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:.6rem;flex:1;">
+      <span class="rec-icon">${isMixed ? '🎯' : allConsumption ? '⚡' : '🔑'}</span>
+      <div>${recBody}</div>
+    </div>
+    <div class="rec-annual">
+      <span class="annual-label">Annual<br>Advantage</span>
+      <span style="color:#065f46">${fmtInt(mixAdvantage * 12)}</span>
+    </div>
+  `;
 
   // Bind user-count inputs in summary table
   table.querySelectorAll('.user-count-input').forEach(inp => {
