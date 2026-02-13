@@ -737,6 +737,9 @@ input[type="range"]::-moz-range-thumb {
 .card-body.collapsed {
   display: none;
 }
+.cadence-always {
+  border-top: 1px solid var(--border);
+}
 
 @media (max-width: 900px) {
   .main-layout {
@@ -1126,6 +1129,14 @@ function renderGroups() {
           <span class="toggle-chevron${isCollapsed ? ' collapsed' : ''}" title="Expand to edit">▾</span>
         </div>
       </div>
+      <div class="cadence-always" style="padding:0 1.2rem .5rem;">
+        <div class="slider-row">
+          <label><span class="c-tag">Cadence</span>Sessions / mo</label>
+          <input type="range" min="1" max="100" step="1" value="${group.cadence}"
+                 data-group="${gi}" data-field="cadence">
+          <span class="slider-val">${group.cadence}</span>
+        </div>
+      </div>
       <div class="card-body${isCollapsed ? ' collapsed' : ''}">
         <div class="cost-decomp">
           <div class="decomp-items">
@@ -1150,12 +1161,6 @@ function renderGroups() {
             </span>
           </div>
           <div class="decomp-note">Composition-weighted across agent types</div>
-        </div>
-        <div class="slider-row">
-          <label><span class="c-tag">Cadence</span>Sessions / mo</label>
-          <input type="range" min="1" max="100" step="1" value="${group.cadence}"
-                 data-group="${gi}" data-field="cadence">
-          <span class="slider-val">${group.cadence}</span>
         </div>
         <div class="comp-label"><span class="c-tag">Composition</span>Agent Mix</div>
         <div class="comp-bar" id="compBar-${gi}"></div>
