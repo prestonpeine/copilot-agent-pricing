@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Copilot Agent Pricing Model — Break-Even Analysis</title>
+<title>M365 Copilot Agent Pricing Model — Break-Even Analysis</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"></script>
 <style>
@@ -456,7 +456,9 @@ input[type="range"]::-moz-range-thumb {
   font-weight: 600;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: .6rem;
+  flex-wrap: wrap;
 }
 .recommendation.consumption-wins { background: rgba(16,185,129,.1); color: #065f46; border: 1px solid rgba(16,185,129,.3); }
 .recommendation.license-wins    { background: rgba(99,102,241,.1); color: #3730a3; border: 1px solid rgba(99,102,241,.3); }
@@ -466,12 +468,12 @@ input[type="range"]::-moz-range-thumb {
   display: inline-flex;
   align-items: center;
   gap: .5rem;
-  margin-top: .5rem;
   padding: .5rem 1rem;
   border-radius: 8px;
   font-size: 1.3rem;
   font-weight: 800;
   letter-spacing: -.01em;
+  margin-left: auto;
 }
 .rec-annual .annual-label {
   font-size: .8rem;
@@ -675,7 +677,7 @@ input[type="range"]::-moz-range-thumb {
 
 <!-- ═══ HERO ═══ -->
 <div class="hero">
-  <h1>Copilot Agent Pricing Model</h1>
+  <h1>M365 Copilot Agent Pricing Model</h1>
   <p>Compare consumption-based pricing vs per-user license to find your break-even point</p>
   <div class="formula-wrap">
     <div class="formula">Total Cost = Cadence × Conversation × Computation × Composition</div>
@@ -1404,27 +1406,31 @@ function renderSummary() {
   if (delta >= 0) {
     recEl.className = 'recommendation consumption-wins';
     recEl.innerHTML = `
-      <span class="rec-icon">💡</span>
-      <div>
-        <div>Consumption model saves your organization</div>
-        <div class="rec-savings">${fmtInt(Math.abs(delta))} / month (${Math.abs(pctSavings).toFixed(1)}% savings)</div>
-        <div class="rec-annual">
-          <span class="annual-label">Annual<br>Savings</span>
-          <span>${fmtInt(Math.abs(delta) * 12)}</span>
+      <div style="display:flex;align-items:center;gap:.6rem;">
+        <span class="rec-icon">💡</span>
+        <div>
+          <div>Consumption model saves your organization</div>
+          <div class="rec-savings">${fmtInt(Math.abs(delta))} / month (${Math.abs(pctSavings).toFixed(1)}% savings)</div>
         </div>
+      </div>
+      <div class="rec-annual">
+        <span class="annual-label">Annual<br>Savings</span>
+        <span>${fmtInt(Math.abs(delta) * 12)}</span>
       </div>
     `;
   } else {
     recEl.className = 'recommendation license-wins';
     recEl.innerHTML = `
-      <span class="rec-icon">🔑</span>
-      <div>
-        <div>Per-user license saves your organization</div>
-        <div class="rec-savings">${fmtInt(Math.abs(delta))} / month (${Math.abs(pctSavings).toFixed(1)}% savings)</div>
-        <div class="rec-annual">
-          <span class="annual-label">Annual<br>Savings</span>
-          <span>${fmtInt(Math.abs(delta) * 12)}</span>
+      <div style="display:flex;align-items:center;gap:.6rem;">
+        <span class="rec-icon">🔑</span>
+        <div>
+          <div>Per-user license saves your organization</div>
+          <div class="rec-savings">${fmtInt(Math.abs(delta))} / month (${Math.abs(pctSavings).toFixed(1)}% savings)</div>
         </div>
+      </div>
+      <div class="rec-annual">
+        <span class="annual-label">Annual<br>Savings</span>
+        <span>${fmtInt(Math.abs(delta) * 12)}</span>
       </div>
     `;
   }
