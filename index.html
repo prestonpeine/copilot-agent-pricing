@@ -275,6 +275,70 @@ input[type="range"]::-moz-range-thumb {
 }
 .comp-bar div { transition: width .2s; }
 
+/* ─── 4C Labels & Decomposition ─── */
+.c-tag {
+  display: block;
+  font-size: .58rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  line-height: 1;
+  margin-bottom: .15rem;
+}
+.cost-decomp {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .55rem .7rem .4rem;
+  margin-bottom: .7rem;
+}
+.decomp-items {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.decomp-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .1rem;
+}
+.decomp-label {
+  font-size: .55rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  line-height: 1;
+}
+.decomp-val {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.decomp-op {
+  font-size: .7rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  padding: 0 .05rem;
+  margin-top: .45rem;
+}
+.decomp-total .decomp-val {
+  color: var(--accent);
+  font-size: .9rem;
+}
+.decomp-note {
+  font-size: .58rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: .3rem;
+  font-style: italic;
+}
+
 /* ─── Chart Section ─── */
 .chart-section {
   margin-top: 0;
@@ -793,6 +857,18 @@ function groupBreakEvenSessions(group) {
   return state.pupm / costPerSession;
 }
 
+function groupDecomposition(group) {
+  let costPerSession = 0;
+  let weightedTurns = 0;
+  state.agents.forEach(a => {
+    const pct = (group.composition[a.id] || 0) / 100;
+    costPerSession += pct * a.turns * a.costPerTurn;
+    weightedTurns += pct * a.turns;
+  });
+  const weightedCostPerTurn = weightedTurns > 0 ? costPerSession / weightedTurns : 0;
+  return { costPerSession, weightedTurns, weightedCostPerTurn };
+}
+
 function fmt(n) { return '$' + n.toFixed(2); }
 function fmtInt(n) { return '$' + Math.round(n).toLocaleString(); }
 
@@ -830,13 +906,13 @@ function renderAgents() {
       <div class="card-body">
         <div class="agent-name" style="color:${agent.color}">${agent.name}</div>
         <div class="slider-row">
-          <label>Turns / session</label>
+          <label><span class="c-tag">Conversation</span>Turns / session</label>
           <input type="range" min="1" max="20" step="1" value="${agent.turns}"
                  data-agent="${idx}" data-field="turns">
           <span class="slider-val">${agent.turns}</span>
         </div>
         <div class="slider-row">
-          <label>Cost / turn</label>
+          <label><span class="c-tag">Computation</span>Cost / turn</label>
           <input type="range" min="0.01" max="0.50" step="0.01" value="${agent.costPerTurn}"
                  data-agent="${idx}" data-field="costPerTurn">
           <span class="slider-val">${fmt(agent.costPerTurn)}</span>
@@ -928,6 +1004,16 @@ function renderGroups() {
       renderCompBar(gi);
       card.querySelector('.be-text').innerHTML =
         `Break-even: <strong>${beSessions === Infinity ? '∞' : Math.round(beSessions)} sessions/mo</strong>`;
+
+      // Update 4C decomposition
+      const decomp = groupDecomposition(group);
+      const decompEl = card.querySelector('.cost-decomp');
+      if (decompEl) {
+        decompEl.querySelector('.decomp-cadence').textContent = group.cadence;
+        decompEl.querySelector('.decomp-conv').textContent = decomp.weightedTurns.toFixed(1) + ' turns';
+        decompEl.querySelector('.decomp-comp').textContent = fmt(decomp.weightedCostPerTurn);
+        decompEl.querySelector('.decomp-total-val').textContent = fmt(cost);
+      }
     });
     return;
   }
@@ -936,6 +1022,7 @@ function renderGroups() {
   grid.innerHTML = '';
   state.groups.forEach((group, gi) => {
     const cost = groupCostPerUser(group);
+    const decomp = groupDecomposition(group);
     const diff = cost - state.pupm;
     const badgeClass = Math.abs(diff) < 0.5 ? 'even' : diff < 0 ? 'under' : 'over';
     const badgeText  = Math.abs(diff) < 0.5 ? 'At break-even' : diff < 0
@@ -963,13 +1050,37 @@ function renderGroups() {
         </div>
       </div>
       <div class="card-body${isCollapsed ? ' collapsed' : ''}">
+        <div class="cost-decomp">
+          <div class="decomp-items">
+            <span class="decomp-item">
+              <span class="decomp-label">Cadence</span>
+              <span class="decomp-val decomp-cadence">${group.cadence}</span>
+            </span>
+            <span class="decomp-op">×</span>
+            <span class="decomp-item">
+              <span class="decomp-label">Conversation</span>
+              <span class="decomp-val decomp-conv">${decomp.weightedTurns.toFixed(1)} turns</span>
+            </span>
+            <span class="decomp-op">×</span>
+            <span class="decomp-item">
+              <span class="decomp-label">Computation</span>
+              <span class="decomp-val decomp-comp">${fmt(decomp.weightedCostPerTurn)}</span>
+            </span>
+            <span class="decomp-op">=</span>
+            <span class="decomp-item decomp-total">
+              <span class="decomp-label">Per User/Mo</span>
+              <span class="decomp-val decomp-total-val">${fmt(cost)}</span>
+            </span>
+          </div>
+          <div class="decomp-note">Composition-weighted across agent types</div>
+        </div>
         <div class="slider-row">
-          <label>Sessions / mo</label>
+          <label><span class="c-tag">Cadence</span>Sessions / mo</label>
           <input type="range" min="1" max="100" step="1" value="${group.cadence}"
                  data-group="${gi}" data-field="cadence">
           <span class="slider-val">${group.cadence}</span>
         </div>
-        <div class="comp-label">Agent Composition</div>
+        <div class="comp-label"><span class="c-tag">Composition</span>Agent Mix</div>
         <div class="comp-bar" id="compBar-${gi}"></div>
         ${state.agents.map(a => `
           <div class="slider-row">
