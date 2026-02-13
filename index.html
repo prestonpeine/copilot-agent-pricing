@@ -1485,7 +1485,6 @@ function renderSummary() {
         <td>
           <span class="rec-cost" style="color:${r.recModel === 'consumption' ? 'var(--accent)' : '#ef4444'}">
             ${fmtInt(r.recommended)}
-            <span class="rec-cost-sub adv-badge ${r.recModel === 'consumption' ? 'consumption' : 'license'}">${r.recModel === 'consumption' ? '⚡ Consumption' : '🔑 PUPM'}</span>
           </span>
         </td>
       </tr>
@@ -1497,10 +1496,7 @@ function renderSummary() {
       <td>—</td>
       <td>${fmtInt(totalConsumption)}</td>
       <td>${fmtInt(totalLicense)}</td>
-      <td>
-        <span class="adv-badge ${isEven ? 'even' : consumptionWins ? 'consumption' : 'license'}">${isEven ? '⚖️ Even' : consumptionWins ? '⚡ Consumption' : '🔑 PUPM'}</span>
-        ${isEven ? '' : '<span class="adv-amount" style="color:' + (consumptionWins ? 'var(--green)' : 'var(--red)') + '">cheaper by ' + fmtInt(Math.abs(delta)) + '/mo</span>'}
-      </td>
+      <td></td>
       <td>
         <span class="rec-cost" style="color:var(--accent);font-size:.95rem;">
           ${fmtInt(totalRecommended)}/mo
