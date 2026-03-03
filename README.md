@@ -4,6 +4,8 @@ Interactive tool for comparing **consumption-based pricing** vs **per-user per-m
 
 **[→ Try it live](https://prestonpeine.github.io/copilot-agent-pricing/)**
 
+See also: [Official Microsoft Copilot Studio Estimator](https://microsoft.github.io/copilot-studio-estimator/)
+
 ![Screenshot](https://img.shields.io/badge/status-live-brightgreen)
 
 ## What It Does
@@ -12,6 +14,8 @@ This single-page calculator helps organizations model the cost of AI agent usage
 
 - **Consumption-based**: Pay per session based on agent complexity (turns × cost per turn × composition mix)
 - **Per-user license (PUPM)**: Flat monthly fee per user regardless of usage
+
+It then recommends the **optimal pricing mix** — consumption for some groups, PUPM for others — to minimize total organizational cost.
 
 ## The 4-C Framework
 
@@ -37,26 +41,34 @@ Cost/turn is calibrated from Copilot Credits at $0.01/credit using published cre
 
 ## User Groups (Defaults)
 
-| Group | Sessions/Mo | Top Agent Mix |
-|---|---|---|
-| Frontline Worker | 25 | 50% Info, 35% Task |
-| Information Worker | 45 | 35% Task, 30% Analyst |
-| Manager | 35 | 40% Analyst, 30% Strategy |
-| Executive | 25 | 55% Strategy, 30% Analyst |
+| Group | Users | Sessions/Mo | Top Agent Mix |
+|---|---|---|---|
+| Frontline Worker | 2,000 | 25 | 50% Info, 35% Task |
+| Information Worker | 1,500 | 45 | 35% Task, 30% Analyst |
+| Manager | 200 | 35 | 40% Analyst, 30% Strategy |
+| Executive | 25 | 25 | 55% Strategy, 30% Analyst |
 
 ## Features
 
 - **Real-time break-even chart** — see where each user group crosses the PUPM line
 - **Adjustable PUPM** — slide from $1–$30 to model different license prices
-- **Agent configuration** — tune turns and cost/turn for each agent type
+- **Agent configuration** — tune turns and cost/turn for each agent type (collapsed by default with summary chips)
 - **Composition sliders** — auto-normalizing mix percentages per user group
-- **Organization summary** — enter user counts to see total cost comparison with annual savings
-- **Persistent state** — your settings are saved in localStorage
+- **Cadence slider always visible** — adjust sessions/month without expanding the group accordion
+- **Organization Cost Summary** — enter user counts to see pure consumption, pure PUPM, and optimal mix costs
+- **Optimal mix recommendation** — per-group advantage badges and a recommended column showing the cheapest model for each group, with annual savings calculation
+- **Blended approach guidance** — recommendation box shows whether to use all consumption, all PUPM, or a named per-group blend
+- **Dark mode** — toggle between Light, Dark, and System (auto-detect) themes; persisted in localStorage
+- **Persistent state** — all settings (PUPM, agents, groups, user counts) saved in localStorage
 - **Fully client-side** — no server, no data leaves your browser
 
 ## Running Locally
 
 Just open `index.html` in any modern browser. No build step or dependencies to install.
+
+## Credits
+
+Maintained by Preston Peine. Based on [Mark Hodge's original work](https://bluemaven.github.io/sharepoint-react-poc/).
 
 ## License
 
