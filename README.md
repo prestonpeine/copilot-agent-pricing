@@ -1,5 +1,7 @@
 # Copilot Agent Pricing Model — Break-Even Analysis
 
+![M365 Copilot Agent Pricing Model](hero-image.png)
+
 Interactive tool for comparing **consumption-based pricing** vs **per-user per-month (PUPM) licensing** for Microsoft 365 Copilot agents.
 
 **[→ Try it live](https://prestonpeine.github.io/copilot-agent-pricing/)**
