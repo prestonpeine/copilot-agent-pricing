@@ -833,6 +833,48 @@ input[type="range"]::-moz-range-thumb {
     position: static;
   }
 }
+
+/* ─── Hero Image Modal ─── */
+.img-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.75);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.img-modal.open { display: flex; }
+.img-modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+.img-modal-content img {
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  display: block;
+}
+.img-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,.6);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #fff;
+  line-height: 1;
+}
+.img-modal-close:hover { background: var(--accent); }
 </style>
 </head>
 <body>
@@ -840,7 +882,7 @@ input[type="range"]::-moz-range-thumb {
 <!-- ═══ HERO ═══ -->
 <div class="hero">
   <h1>M365 Copilot Agent Pricing Model</h1>
-  <img src="hero-image.png" alt="M365 Copilot Agent Pricing Model" style="max-height:80px;margin:.6rem auto .4rem;display:block;border-radius:8px;">
+  <img id="heroImg" src="hero-image.png" alt="M365 Copilot Agent Pricing Model" role="button" tabindex="0" style="max-height:80px;margin:.6rem auto .4rem;display:block;border-radius:8px;cursor:pointer;" title="Click to enlarge">
   <p>Compare consumption-based pricing vs per-user license to find your break-even point</p>
   <p style="font-size:.85rem;opacity:.8;margin-top:.3rem;"><a href="https://microsoft.github.io/copilot-studio-estimator/" target="_blank" rel="noopener" style="color:#c7d2fe;text-decoration:underline;">Official Microsoft Agent Usage Estimator ↗</a></p>
   <div class="formula-wrap">
@@ -851,6 +893,14 @@ input[type="range"]::-moz-range-thumb {
       <div class="def-row"><span class="def-term">Computation:</span> The cost per turn — driven by model complexity, data grounding, and tool calls. Simple lookups are cheap; deep analysis costs more.</div>
       <div class="def-row"><span class="def-term">Composition:</span> What mix of agents does each user group rely on? A team heavy on Strategy agents costs more than one using mostly Information Retrieval.</div>
     </div>
+  </div>
+</div>
+
+<!-- ═══ HERO IMAGE MODAL ═══ -->
+<div class="img-modal" id="imgModal" role="dialog" aria-modal="true" aria-label="Hero image enlarged">
+  <div class="img-modal-content">
+    <button class="img-modal-close" id="imgModalClose" aria-label="Close">✕</button>
+    <img src="hero-image.png" alt="M365 Copilot Agent Pricing Model">
   </div>
 </div>
 
@@ -1807,6 +1857,16 @@ themeToggleBtn.addEventListener('click', () => {
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
   if (getStoredTheme() === 'system') applyTheme('system');
 });
+
+// ─── Hero Image Modal ───
+const heroImg = document.getElementById('heroImg');
+const imgModal = document.getElementById('imgModal');
+const imgModalClose = document.getElementById('imgModalClose');
+heroImg.addEventListener('click', () => imgModal.classList.add('open'));
+heroImg.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); imgModal.classList.add('open'); } });
+imgModalClose.addEventListener('click', () => imgModal.classList.remove('open'));
+imgModal.addEventListener('click', e => { if (e.target === imgModal) imgModal.classList.remove('open'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && imgModal.classList.contains('open')) imgModal.classList.remove('open'); });
 
 // Apply on load
 applyTheme(getStoredTheme());
